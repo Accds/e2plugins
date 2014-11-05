@@ -403,7 +403,8 @@ class EGPMatchByName(Screen):
 
 		# load all unmapped channels
 		if not epgWorker.active and len(epgWorker.channels) == 0:
-			self.doFilterCallback(True)
+			#self.doFilterCallback(True)
+			self.doChannelLoad()
 			self.waitForEpgWorker = 1
 		elif epgWorker.active:
 			self.waitForEpgWorker = 1
@@ -579,7 +580,18 @@ class EGPMatchByName(Screen):
 	def proceedEpgLoadCall(self, sources):
 		epgWorker.epgLoad(sources)
 				
-	def doFilterCallback(self, confirmed):
+	def doChannelLoad(self):		
+		if epgWorker.active:
+			return
+		try:
+			epgWorker.updateStatus = self.updateStatus
+			epgWorker.createFilteredChannelFile(True)
+		except Exception, e:
+			epgWorker.status = "Failed to start: " + str(e)
+
+		self.updateStatus()
+
+	def doFilterCallback(self, confirmed):		
 		if not confirmed:
 			return
 		if epgWorker.active:
@@ -588,7 +600,7 @@ class EGPMatchByName(Screen):
 			#epgWorker.bouquets = self.bouquets
 			epgWorker.updateStatus = self.updateStatus
 			#epgWorker.doneLoading = self.doneLoadingChannels
-			epgWorker.createFilteredChannelFile(True)
+			epgWorker.createFilteredChannelFile()
 		except Exception, e:
 			epgWorker.status = "Failed to start: " + str(e)
 
